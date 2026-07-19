@@ -1,0 +1,92 @@
+[
+    {
+      "id": 1,
+      "tip": "Always verify the farmer or seller profile before purchasing farm produce online.",
+      "timeInterval": "weekly",
+      "touchGesture": "tap"
+    },
+    {
+      "id": 2,
+      "tip": "Compare produce prices from multiple sellers to get the best value.",
+      "timeInterval": "daily",
+      "touchGesture": "tap"
+    },
+    {
+      "id": 3,
+      "tip": "Check customer reviews and ratings before placing an order.",
+      "timeInterval": "weekly",
+      "touchGesture": "double tap"
+    },
+    {
+      "id": 4,
+      "tip": "Inspect uploaded product images carefully to confirm freshness and quality.",
+      "timeInterval": "daily",
+      "touchGesture": "pinch"
+    },
+    {
+      "id": 5,
+      "tip": "Use secure payment methods such as mobile money or card payments within the app.",
+      "timeInterval": "daily",
+      "touchGesture": "swipe up"
+    },
+    {
+      "id": 6,
+      "tip": "Avoid making payments outside the platform to reduce the risk of fraud.",
+      "timeInterval": "weekly",
+      "touchGesture": "long press"
+    },
+    {
+      "id": 7,
+      "tip": "Confirm the quantity and measurement units before completing a purchase.",
+      "timeInterval": "daily",
+      "touchGesture": "tap"
+    },
+    {
+      "id": 8,
+      "tip": "Buy seasonal farm products because they are often fresher and cheaper.",
+      "timeInterval": "monthly",
+      "touchGesture": "swipe left"
+    },
+    {
+      "id": 9,
+      "tip": "Track delivery progress using GPS or real-time delivery notifications.",
+      "timeInterval": "daily",
+      "touchGesture": "swipe right"
+    },
+    {
+      "id": 10,
+      "tip": "Double-check your delivery address before confirming the order.",
+      "timeInterval": "daily",
+      "touchGesture": "tap"
+    },
+    {
+      "id": 11,
+      "tip": "Inspect produce immediately after delivery for spoilage or damage.",
+      "timeInterval": "daily",
+      "touchGesture": "double tap"
+    },
+    {
+      "id": 12,
+      "tip": "Store fruits and vegetables properly after delivery to maintain freshness.",
+      "timeInterval": "weekly",
+      "touchGesture": "swipe down"
+    },
+    {
+      "id": 13,
+      "tip": "Report damaged or incorrect deliveries to customer support immediately.",
+      "timeInterval": "daily",
+      "touchGesture": "long press"
+    },
+    {
+      "id": 14,
+      "tip": "Keep digital receipts and order records for future reference and refunds.",
+      "timeInterval": "monthly",
+      "touchGesture": "swipe up"
+    },
+    {
+      "id": 15,
+      "tip": "Use contactless delivery options whenever available for added convenience and safety.",
+      "timeInterval": "weekly",
+      "touchGesture": "swipe left"
+    }
+  ]
