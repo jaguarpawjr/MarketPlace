@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "tip": "Water seedlings in the early morning before the heat rises to reduce evaporation and encourage deep root growth.",
+    "timeInterval": "daily morning",
+    "touchGesture": "tap"
+  },
+  {
+    "id": 2,
+    "tip": "Inspect plants for pests and disease during mid-morning when symptoms are easier to spot on leaves.",
+    "timeInterval": "daily mid-morning",
+    "touchGesture": "swipe right"
+  },
+  {
+    "id": 3,
+    "tip": "Harvest fruits and vegetables in the late afternoon when temperatures are cooler and produce is less stressed.",
+    "timeInterval": "daily late afternoon",
+    "touchGesture": "swipe left"
+  },
+  {
+    "id": 4,
+    "tip": "Rotate crops in each bed every 4 to 6 weeks to reduce soil-borne pests and improve nutrient balance.",
+    "timeInterval": "weekly",
+    "touchGesture": "double tap"
+  },
+  {
+    "id": 5,
+    "tip": "Test soil moisture before irrigation; aim for slightly damp soil rather than saturated ground.",
+    "timeInterval": "daily afternoon",
+    "touchGesture": "long press"
+  },
+  {
+    "id": 6,
+    "tip": "Apply mulch after planting to retain soil moisture, suppress weeds, and moderate soil temperature.",
+    "timeInterval": "weekly",
+    "touchGesture": "tap"
+  },
+  {
+    "id": 7,
+    "tip": "Check weather forecasts first thing in the morning so you can adjust watering and spraying schedules.",
+    "timeInterval": "daily morning",
+    "touchGesture": "swipe up"
+  },
+  {
+    "id": 8,
+    "tip": "Prune damaged leaves and spent blooms to improve air circulation and reduce disease risk.",
+    "timeInterval": "biweekly",
+    "touchGesture": "swipe down"
+  },
+  {
+    "id": 9,
+    "tip": "Keep tools clean and dry after use to prevent rust and the spread of pathogens between crops.",
+    "timeInterval": "daily evening",
+    "touchGesture": "two-finger swipe"
+  },
+  {
+    "id": 10,
+    "tip": "Plant cover crops after harvest to protect soil, add organic matter, and reduce erosion.",
+    "timeInterval": "seasonal",
+    "touchGesture": "pinch"
+  },
+  {
+    "id": 11,
+    "tip": "Monitor soil pH monthly and amend it as needed for your crop’s preferred range.",
+    "timeInterval": "monthly",
+    "touchGesture": "tap"
+  },
+  {
+    "id": 12,
+    "tip": "Use shade nets or row covers in the hottest part of the day to protect tender crops from sunburn.",
+    "timeInterval": "daily midday",
+    "touchGesture": "swipe right"
+  },
+  {
+    "id": 13,
+    "tip": "Record market prices and demand each week to plan harvests for the best value.",
+    "timeInterval": "weekly",
+    "touchGesture": "double tap"
+  },
+  {
+    "id": 14,
+    "tip": "Inspect irrigation lines daily for leaks or blockages to conserve water and maintain even distribution.",
+    "timeInterval": "daily mid-morning",
+    "touchGesture": "long press"
+  },
+  {
+    "id": 15,
+    "tip": "Store seeds in a cool, dry place and rotate your seed inventory to keep germination rates high.",
+    "timeInterval": "monthly",
+    "touchGesture": "swipe left"
+  }
+]
