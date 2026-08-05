@@ -49,6 +49,11 @@ dependencies:
 
   logging: any
   firebase_messaging: ^16.4.3
+  url_launcher: ^6.3.2
+  shared_preferences: ^2.5.5
+  mjpeg_view: ^1.0.1
+  tflite_flutter: ^0.12.1
+  image: ^4.8.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
