@@ -2,18 +2,17 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:marketplace/screens/ai_chat.dart';
+import 'package:marketplace/Auth/login.dart';
 import 'package:marketplace/screens/cart.dart';
 import 'package:marketplace/screens/product_detail.dart';
-import 'package:marketplace/screens/services_screen.dart';
 import 'package:marketplace/screens/support/support_tickets_screen.dart';
-import 'package:marketplace/screens_buyer/orders.dart';
+import 'package:marketplace/screens_buyer/marketplace_buyer.dart';
 import 'package:marketplace/screens_buyer/profile.dart';
-import 'package:marketplace/screens_farmer/esp32_camera_screen.dart';
 import 'package:marketplace/services/favorite_service.dart';
 import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/services/user_session.dart';
 import 'package:marketplace/theme.dart';
+import 'package:marketplace/screens/chat/chat_screen.dart';
 
 class HomePageBuyer extends StatefulWidget {
   const HomePageBuyer({super.key});
@@ -23,11 +22,13 @@ class HomePageBuyer extends StatefulWidget {
 }
 
 class _HomePageBuyerState extends State<HomePageBuyer> {
-  int _index = 0;
+  final ValueNotifier<int> _indexNotifier = ValueNotifier<int>(0);
   final TextEditingController _searchController = TextEditingController();
   final List<BuyerTip> _tips = [];
   int _tipIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<MarketplaceScreenState> _marketplaceKey =
+      GlobalKey<MarketplaceScreenState>();
 
   @override
   void initState() {
@@ -92,7 +93,13 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
   }
 
   void _navigateToMarketplace({String? category, String? query}) {
-    setState(() => _index = 1);
+    _indexNotifier.value = 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _marketplaceKey.currentState?.applyFilter(
+        category: category,
+        query: query,
+      );
+    });
   }
 
   void _openProductDetails(MarketProduct product) {
@@ -114,7 +121,7 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
         action: SnackBarAction(
           label: 'View Cart',
           textColor: Colors.white,
-          onPressed: () => setState(() => _index = 2),
+          onPressed: () => _indexNotifier.value = 2,
         ),
         backgroundColor: AppTheme.primary,
       ),
@@ -123,28 +130,35 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      _buildHomeContent(),
-      ServicesScreen(
-        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-        onNotificationTap: _openNotifications,
-        onCategorySelected: (category) =>
-            _navigateToMarketplace(category: category),
-      ),
-      const CartPage(),
-      const ProfileScreen(),
-    ];
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppTheme.background,
       drawer: _buildDrawer(),
-      body: pages[_index],
-      bottomNavigationBar: _buildBottomNav(),
+      body: ValueListenableBuilder<int>(
+        valueListenable: _indexNotifier,
+        builder: (context, index, child) {
+          final pages = [
+            _buildHomeContent(),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: MarketplaceScreen(key: _marketplaceKey),
+              ),
+            ),
+            const CartPage(),
+            const ProfileScreen(),
+          ];
+          return pages[index];
+        },
+      ),
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: _indexNotifier,
+        builder: (context, index, child) => _buildBottomNav(index),
+      ),
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(int currentIndex) {
     final cartCount = UserSession.cart.fold<int>(
       0,
       (sum, item) => sum + item.quantity,
@@ -163,19 +177,19 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'Home'),
-              _buildNavItem(1, Icons.storefront_rounded, 'Services'),
-              _buildCartNavItem(
+              _buildNavItem(currentIndex, 0, Icons.home_rounded, 'Home'),
+              _buildNavItem(currentIndex, 1, Icons.storefront_rounded, 'Market'),
+              _buildCartNavItem(currentIndex, 
                 2,
                 Icons.shopping_cart_outlined,
                 'Cart',
                 cartCount,
               ),
-              _buildNavItem(3, Icons.person_outline_rounded, 'Profile'),
+              _buildNavItem(currentIndex, 3, Icons.person_outline_rounded, 'Profile'),
             ],
           ),
         ),
@@ -183,10 +197,10 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = _index == index;
+  Widget _buildNavItem(int currentIndex, int index, IconData icon, String label) {
+    final isSelected = currentIndex == index;
     return InkWell(
-      onTap: () => setState(() => _index = index),
+      onTap: () => _indexNotifier.value = index,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -213,10 +227,10 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
     );
   }
 
-  Widget _buildCartNavItem(int index, IconData icon, String label, int count) {
-    final isSelected = _index == index;
+  Widget _buildCartNavItem(int currentIndex, int index, IconData icon, String label, int count) {
+    final isSelected = currentIndex == index;
     return InkWell(
-      onTap: () => setState(() => _index = index),
+      onTap: () => _indexNotifier.value = index,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -286,6 +300,7 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
             _buildHeader(),
             const SizedBox(height: 18),
             _buildSearchAndFilter(),
+            const SizedBox(height: 18),
             const SizedBox(height: 20),
             _buildFreeConsultationBanner(),
             const SizedBox(height: 24),
@@ -481,7 +496,10 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const AIChatScreen()),
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const SupportTicketsScreen(userType: 'buyer'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -497,7 +515,7 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                     ),
                   ),
                   child: const Text(
-                    'Call Now',
+                    'Get Support',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -508,13 +526,25 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
           Expanded(
             flex: 2,
             child: Container(
-              height: 110,
+              height: 100,
+              width: 100,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withValues(alpha: 0.8),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: Image(image: AssetImage('assets/customer_care.jpeg')),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: Image.asset(
+                  'assets/customer_care.jpeg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(
+                      Icons.support_agent_rounded,
+                      size: 54,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -659,13 +689,8 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(9),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 6,
-                                  ),
-                                ],
                               ),
+
                               child: Center(
                                 child: Icon(
                                   isFav
@@ -684,13 +709,8 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(9),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 6,
-                              ),
-                            ],
                           ),
+
                           child: const Center(
                             child: Icon(
                               Icons.bookmark_border_rounded,
@@ -736,7 +756,7 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                           width: 28,
                           height: 28,
                           decoration: BoxDecoration(
-                            color: AppTheme.primary,
+                            color: const Color.fromARGB(255, 95, 226, 169),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -852,6 +872,27 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textPrimary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Buyer Account',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primary,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -861,25 +902,14 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                             fontSize: 12,
                             color: AppTheme.textSecondary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.receipt_long_rounded,
-                color: AppTheme.primary,
-              ),
-              title: const Text('My Orders'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const OrdersScreen()));
-              },
             ),
             ListTile(
               leading: const Icon(
@@ -894,28 +924,26 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
             ),
             ListTile(
               leading: const Icon(
-                Icons.smart_toy_rounded,
+                Icons.message_rounded,
                 color: AppTheme.primary,
               ),
-              title: const Text('AI Farming Assistant'),
+              title: const Text('Messages'),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const AIChatScreen()));
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChatInboxScreen()),
+                );
               },
             ),
             ListTile(
               leading: const Icon(
-                Icons.camera_alt_rounded,
+                Icons.shopping_cart_outlined,
                 color: AppTheme.primary,
               ),
-              title: const Text('Plant Disease Detection'),
+              title: const Text('My Cart'),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const Esp32CameraScreen()),
-                );
+                _indexNotifier.value = 2;
               },
             ),
             ListTile(
@@ -923,7 +951,7 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                 Icons.support_agent_rounded,
                 color: AppTheme.primary,
               ),
-              title: const Text('Support & Tickets'),
+              title: const Text('Customer Support & Tickets'),
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
@@ -932,6 +960,17 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
                         const SupportTicketsScreen(userType: 'buyer'),
                   ),
                 );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.person_outline_rounded,
+                color: AppTheme.primary,
+              ),
+              title: const Text('My Profile'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _indexNotifier.value = 3;
               },
             ),
             const Spacer(),
@@ -947,6 +986,11 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
               ),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
+                if (!mounted) return;
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
               },
             ),
           ],
