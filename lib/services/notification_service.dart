@@ -106,12 +106,12 @@ class NotificationService {
         .where('userId', isEqualTo: user.uid)
         .snapshots()
         .map((snapshot) {
-      final notifications = snapshot.docs
-          .map((doc) => AppNotification.fromDocument(doc))
-          .toList();
-      notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return notifications;
-    });
+          final notifications = snapshot.docs
+              .map((doc) => AppNotification.fromDocument(doc))
+              .toList();
+          notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return notifications;
+        });
   }
 
   static String _topicForUser(String userId) {

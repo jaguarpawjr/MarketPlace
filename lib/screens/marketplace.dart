@@ -139,7 +139,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             label: const Text('List'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: Colors.deepPurple.shade700,
+              foregroundColor: const Color.fromARGB(255, 95, 226, 169),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -441,7 +441,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade50,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -669,7 +668,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (error) {
-      print("this my error: $error");
+      debugPrint("this my error: $error");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -705,7 +704,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                 const SizedBox(height: 14),
                 _buildTextField(_locationController, 'Location'),
                 const SizedBox(height: 14),
-                _buildTextField(_priceController, 'Price e.g. Ksh 120/kg'),
+                _buildTextField(_priceController, 'Price e.g. GHC 120/kg'),
                 const SizedBox(height: 14),
                 _buildTextField(_freshnessController, 'Freshness note'),
                 const SizedBox(height: 14),
@@ -846,11 +845,11 @@ class _AddListingScreenState extends State<AddListingScreen> {
         labelStyle: const TextStyle(color: Colors.black54),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white24),
+          borderSide: const BorderSide(color: Colors.black26),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: const BorderSide(color: Colors.black87),
         ),
       ),
     );

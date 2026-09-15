@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:marketplace/Auth/login.dart';
 import 'package:marketplace/screens/chat/chat_screen.dart';
 import 'package:marketplace/user_service.dart';
-import 'package:marketplace/screens_buyer/orders.dart';
 import 'package:marketplace/screens_buyer/favorite_farmers.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:marketplace/services/market_service.dart';
+import 'package:marketplace/screens/support/support_tickets_screen.dart';
+import 'package:marketplace/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -33,40 +36,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: 'View farmers you follow',
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const FavoriteFarmersScreen()),
-                );
-              },
-            ),
-            _buildMenuTile(
-              context,
-              icon: Icons.shopping_bag_outlined,
-              title: 'My Orders',
-              subtitle: 'View your purchase history',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const OrdersScreen()),
-                );
-              },
-            ),
-            _buildMenuTile(
-              context,
-              icon: Icons.notifications_none,
-              title: 'Notifications',
-              subtitle: 'View updates and alerts',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const FavoriteFarmersScreen(),
+                  ),
                 );
               },
             ),
             _buildMenuTile(
               context,
               icon: Icons.help_outline,
-              title: 'Help & Support',
-              subtitle: 'Ask questions or report issues',
+              title: 'Reports & Feedback',
+              subtitle: 'Report an issue and receive feedback',
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const SupportTicketsScreen(userType: 'buyer'),
+                  ),
                 );
               },
             ),
@@ -149,10 +135,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Row(
             children: [
-              const CircleAvatar(
-                radius: 34,
-                backgroundColor: Colors.deepPurple,
-                child: Icon(Icons.person, size: 36, color: Colors.white),
+              InkWell(
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (image != null) {
+                    try {
+                      final url = await MarketService.uploadMediaFile(image);
+                      await user?.updatePhotoURL(url);
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user?.uid)
+                          .update({'photoURL': url});
+                      if (mounted) setState(() {});
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Failed to update profile picture: $e',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  }
+                },
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 34,
+                      backgroundColor: AppTheme.primary,
+                      backgroundImage:
+                          (data['photoURL'] as String?)?.isNotEmpty == true
+                          ? NetworkImage(data['photoURL'] as String)
+                          : null,
+                      child: (data['photoURL'] as String?)?.isNotEmpty == true
+                          ? null
+                          : const Icon(
+                              Icons.person,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.edit,
+                          size: 12,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -203,12 +248,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: ListTile(
         leading: Container(
           decoration: BoxDecoration(
-            color: Colors.deepPurple.shade50,
+            color: const Color(0xFFEAF8F1),
             borderRadius: BorderRadius.circular(12),
           ),
           width: 44,
           height: 44,
-          child: Icon(icon, color: Colors.deepPurple.shade700),
+          child: Icon(icon, color: AppTheme.primary),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
@@ -226,43 +271,7 @@ class NotificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          _NotificationItem(
-            title: 'New offer from local farmer',
-            subtitle: 'Fresh produce available near you',
-          ),
-          _NotificationItem(
-            title: 'Order update',
-            subtitle: 'Your last purchase is out for delivery',
-          ),
-          _NotificationItem(
-            title: 'System alert',
-            subtitle: 'Maintenance scheduled at 11:00 PM tonight',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NotificationItem extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _NotificationItem({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        leading: const Icon(Icons.notifications_active_outlined),
-      ),
+      body: const Center(child: Text('No notifications yet.')),
     );
   }
 }
@@ -328,7 +337,7 @@ class _SupportCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.deepPurple.shade700),
+        leading: Icon(icon, color: AppTheme.primary),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
       ),

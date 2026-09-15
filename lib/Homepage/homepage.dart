@@ -18,7 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _index = 0;
+  final ValueNotifier<int> _indexNotifier = ValueNotifier<int>(0);
   bool _loadingWeather = false;
   String? _weatherError;
   WeatherData? _weather;
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
 
   void _onActionTap(_HomeAction action) {
     if (action.tabIndex != null) {
-      setState(() => _index = action.tabIndex!);
+      _indexNotifier.value = action.tabIndex!;
     } else {
       _loadWeather();
     }
@@ -139,59 +139,62 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_index == 0 ? 'Smart Farmer' : _navTitle()),
-        backgroundColor: const Color.fromARGB(255, 53, 177, 94),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
+    return ValueListenableBuilder<int>(
+      valueListenable: _indexNotifier,
+      builder: (context, index, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(index == 0 ? 'Smart Farmer' : _navTitle(index)),
+            backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none),
+                onPressed: () {},
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(gradient: AppTheme.authGradient()),
-        child: SafeArea(
-          child: _index == 0
-              ? SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _buildHome(),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _pages[_index],
-                ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        selectedItemColor: const Color.fromARGB(255, 53, 177, 129),
-        unselectedItemColor: Colors.black54,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
+          body: Container(
+            decoration: BoxDecoration(gradient: AppTheme.authGradient()),
+            child: SafeArea(
+              child: index == 0
+                  ? SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildHome(),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _pages[index],
+                    ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.storefront_outlined),
-            label: 'Market',
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: index,
+            selectedItemColor: const Color.fromARGB(255, 53, 177, 129),
+            unselectedItemColor: Colors.black54,
+            onTap: (i) => _indexNotifier.value = i,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.storefront_outlined),
+                label: 'Market',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble_outline),
+                label: 'AI',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.camera_alt_outlined),
+                label: 'Detect',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                label: 'Profile',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'AI',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt_outlined),
-            label: 'Detect',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color.fromARGB(255, 53, 177, 94),
         foregroundColor: Colors.white,
@@ -203,10 +206,11 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.smart_toy_outlined),
       ),
     );
+  });
   }
 
-  String _navTitle() {
-    switch (_index) {
+  String _navTitle(int index) {
+    switch (index) {
       case 1:
         return 'Marketplace';
       case 2:
@@ -588,7 +592,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const Spacer(),
                               ElevatedButton(
-                                onPressed: () => setState(() => _index = 1),
+                                onPressed: () => _indexNotifier.value = 1,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.deepPurple.shade600,
                                   foregroundColor: Colors.white,

@@ -152,16 +152,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   top: false,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 16,
-                          offset: const Offset(0, -4),
-                        ),
-                      ],
-                    ),
+                    decoration: BoxDecoration(color: Colors.white),
                     child: Row(
                       children: [
                         Expanded(
@@ -188,7 +179,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                               ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.send),
                         ),

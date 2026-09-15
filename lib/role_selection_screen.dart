@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace/Homepage/homepage.dart';
 import 'package:marketplace/Homepage/homepage_buyer.dart';
 import 'package:marketplace/models/user_profile.dart' as user_profile;
-import 'package:marketplace/services/user_session.dart'  as user_session;
+import 'package:marketplace/services/user_session.dart' as user_session;
 import 'package:marketplace/user_service.dart';
 import 'package:marketplace/theme.dart';
 
@@ -25,7 +25,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     _RoleOption(
       role: user_profile.UserRole.farmer,
       title: 'Farmer',
-      subtitle: 'Sell agricultural products, manage listings, and access farm tools.',
+      subtitle:
+          'Sell agricultural products, manage listings, and access farm tools.',
       icon: Icons.agriculture_outlined,
     ),
     _RoleOption(
@@ -89,16 +90,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               Text(
                 'How would you like to use the app?',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Choose a role to personalize your Marketplace experience.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.black54,
-                      height: 1.5,
-                    ),
+                  color: Colors.black54,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -117,13 +118,18 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
               ),
               if (_errorMessage != null) ...[
-                Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent)),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
                 const SizedBox(height: 12),
               ],
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _selectedRoleIndex == null || _isSaving ? null : _onContinue,
+                  onPressed: _selectedRoleIndex == null || _isSaving
+                      ? null
+                      : _onContinue,
                   child: _isSaving
                       ? const SizedBox(
                           width: 22,
@@ -172,7 +178,7 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppTheme.primary   : Colors.white,
+      color: selected ? AppTheme.primary : Colors.white,
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
         onTap: onTap,
@@ -185,13 +191,6 @@ class _RoleCard extends StatelessWidget {
               color: selected ? AppTheme.primary : Colors.grey.shade200,
               width: selected ? 2 : 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +201,7 @@ class _RoleCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.12),
+                      color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(option.icon, color: AppTheme.primary, size: 26),

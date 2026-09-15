@@ -159,11 +159,19 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     children: [
                       Row(
                         children: const [
-                          Icon(Icons.analytics, color: Colors.greenAccent, size: 28),
+                          Icon(
+                            Icons.analytics,
+                            color: Colors.greenAccent,
+                            size: 28,
+                          ),
                           SizedBox(width: 12),
                           Text(
                             'Analysis Result',
-                            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -174,14 +182,14 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Disease Name & Confidence
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+                      border: Border.all(color: Colors.greenAccent),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -192,12 +200,19 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                             children: [
                               const Text(
                                 'Detected:',
-                                style: TextStyle(color: Colors.white54, fontSize: 14),
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 14,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 info?.title ?? disease,
-                                style: const TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -207,12 +222,19 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                           children: [
                             const Text(
                               'Confidence',
-                              style: TextStyle(color: Colors.white54, fontSize: 14),
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 14,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${confidence.toStringAsFixed(1)}%',
-                              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -220,7 +242,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Comprehensive Info
                   Expanded(
                     child: SingleChildScrollView(
@@ -228,14 +250,33 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (info != null) ...[
-                            _buildInfoSection(Icons.info_outline, 'What is it?', info.description),
-                            _buildInfoSection(Icons.search, 'Symptoms', info.symptoms),
-                            _buildInfoSection(Icons.medical_services_outlined, 'Treatment', info.treatment),
-                            _buildInfoSection(Icons.shield_outlined, 'Prevention', info.prevention),
+                            _buildInfoSection(
+                              Icons.info_outline,
+                              'What is it?',
+                              info.description,
+                            ),
+                            _buildInfoSection(
+                              Icons.search,
+                              'Symptoms',
+                              info.symptoms,
+                            ),
+                            _buildInfoSection(
+                              Icons.medical_services_outlined,
+                              'Treatment',
+                              info.treatment,
+                            ),
+                            _buildInfoSection(
+                              Icons.shield_outlined,
+                              'Prevention',
+                              info.prevention,
+                            ),
                           ] else ...[
                             const Text(
                               'No detailed information available for this detection.',
-                              style: TextStyle(color: Colors.white70, fontSize: 16),
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
+                              ),
                             ),
                           ],
                           const SizedBox(height: 40),
@@ -323,7 +364,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                   ElevatedButton(
                     onPressed: _connectToCamera,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent.withOpacity(0.2),
+                      backgroundColor: Colors.greenAccent,
                       foregroundColor: Colors.greenAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -378,17 +419,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
               decoration: BoxDecoration(
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.greenAccent.withOpacity(0.5),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.greenAccent.withOpacity(0.1),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
+                border: Border.all(color: Colors.greenAccent, width: 2),
               ),
               clipBehavior: Clip.antiAlias,
               child: Stack(
@@ -408,9 +439,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                       child: FittedBox(
                         fit: BoxFit.cover,
                         clipBehavior: Clip.hardEdge,
-                        child: MjpegView(
-                          uri: _streamUrl,
-                        ),
+                        child: MjpegView(uri: _streamUrl),
                       ),
                     )
                   else
@@ -521,13 +550,9 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
     required Color color,
     bool isPrimary = false,
   }) {
-    final bgColor = isPrimary
-        ? Colors.greenAccent.withOpacity(0.2)
-        : Colors.white.withOpacity(0.1);
+    final bgColor = isPrimary ? Colors.greenAccent : Colors.white;
 
-    final borderColor = isPrimary
-        ? Colors.greenAccent.withOpacity(0.5)
-        : Colors.white.withOpacity(0.2);
+    final borderColor = isPrimary ? Colors.greenAccent : Colors.white;
 
     return InkWell(
       onTap: onPressed,
@@ -535,7 +560,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: onPressed == null ? Colors.white.withOpacity(0.05) : bgColor,
+          color: onPressed == null ? Colors.white : bgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: onPressed == null ? Colors.transparent : borderColor,
@@ -569,7 +594,7 @@ class BracketPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.greenAccent.withOpacity(0.8)
+      ..color = Colors.greenAccent
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 

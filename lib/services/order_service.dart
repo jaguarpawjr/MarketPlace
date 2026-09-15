@@ -14,8 +14,10 @@ class OrderService {
         .where('buyerId', isEqualTo: buyerId)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => OrderModel.fromDocument(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => OrderModel.fromDocument(doc)).toList(),
+        );
   }
 
   static Stream<List<OrderModel>> streamFarmerOrders(String farmerId) {
@@ -23,11 +25,16 @@ class OrderService {
         .where('farmerId', isEqualTo: farmerId)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => OrderModel.fromDocument(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => OrderModel.fromDocument(doc)).toList(),
+        );
   }
 
-  static Future<void> updateOrderStatus(String orderId, String newStatus) async {
-    await _ordersRef.doc(orderId).update({'status': newStatus});
+  static Future<void> updateOrderStatus(
+    String orderId,
+    String newStatus,
+  ) async {
+    await _ordersRef.doc(orderId).update({'orderStatus': newStatus});
   }
 }

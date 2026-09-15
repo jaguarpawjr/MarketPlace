@@ -116,8 +116,9 @@ class ConversationMessage {
 }
 
 class ChatService {
-  static final _conversationsRef =
-      FirebaseFirestore.instance.collection('conversations');
+  static final _conversationsRef = FirebaseFirestore.instance.collection(
+    'conversations',
+  );
 
   static String conversationId({
     required String buyerId,
@@ -152,15 +153,14 @@ class ChatService {
       updatedAt: now,
     );
 
-    final createdAt = existing.exists ? (existing.data()?['createdAt'] as Timestamp?)?.toDate() : now;
+    final createdAt = existing.exists
+        ? (existing.data()?['createdAt'] as Timestamp?)?.toDate()
+        : now;
 
-    await ref.set(
-      {
-        ...conversation.toMap(),
-        'createdAt': createdAt,
-      },
-      SetOptions(merge: true),
-    );
+    await ref.set({
+      ...conversation.toMap(),
+      'createdAt': createdAt,
+    }, SetOptions(merge: true));
 
     return conversation;
   }
@@ -192,9 +192,10 @@ class ChatService {
         .collection('messages')
         .orderBy('createdAt', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map(ConversationMessage.fromDocument)
-            .toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map(ConversationMessage.fromDocument).toList(),
+        );
   }
 
   static Future<void> sendMessage({
@@ -220,15 +221,12 @@ class ChatService {
       ).toMap(),
     );
 
-    await conversationRef.set(
-      {
-        ...conversation.toMap(),
-        'lastMessage': trimmed,
-        'lastSenderId': senderId,
-        'updatedAt': Timestamp.fromDate(now),
-        'participantIds': conversation.participantIds,
-      },
-      SetOptions(merge: true),
-    );
+    await conversationRef.set({
+      ...conversation.toMap(),
+      'lastMessage': trimmed,
+      'lastSenderId': senderId,
+      'updatedAt': Timestamp.fromDate(now),
+      'participantIds': conversation.participantIds,
+    }, SetOptions(merge: true));
   }
 }

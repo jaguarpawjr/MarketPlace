@@ -40,15 +40,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       }
       setState(() => _currentStatus = newStatus);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(successMessage)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(successMessage)));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -66,11 +66,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('You are about to authorize payment for ${widget.order.productName}.'),
+              Text(
+                'You are about to authorize payment for ${widget.order.productName}.',
+              ),
               const SizedBox(height: 12),
-              Text('Total Amount: GHC ${widget.order.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                'Total Amount: GHC ${widget.order.price.toStringAsFixed(0)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
-              const Text('This will transfer funds from your wallet to the farmer\'s account.'),
+              const Text(
+                'This will transfer funds from your wallet to the farmer\'s account.',
+              ),
             ],
           ),
           actions: [
@@ -83,7 +90,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Navigator.pop(ctx);
                 _updateStatus('Paid', 'Payment successful! Funds transferred.');
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5C3BFF), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5C3BFF),
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Confirm Payment'),
             ),
           ],
@@ -126,13 +136,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,30 +201,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Order Status',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildStatusStep('Pending', 'Order placed by buyer', _currentStatus == 'Pending' || _currentStatus == 'Accepted' || _currentStatus == 'Paid'),
+          _buildStatusStep(
+            'Pending',
+            'Order placed by buyer',
+            _currentStatus == 'Pending' ||
+                _currentStatus == 'Accepted' ||
+                _currentStatus == 'Paid',
+          ),
           _buildStatusLine(),
-          _buildStatusStep('Accepted', 'Farmer confirmed order', _currentStatus == 'Accepted' || _currentStatus == 'Paid'),
+          _buildStatusStep(
+            'Accepted',
+            'Farmer confirmed order',
+            _currentStatus == 'Accepted' || _currentStatus == 'Paid',
+          ),
           _buildStatusLine(),
-          _buildStatusStep('Paid', 'Payment completed', _currentStatus == 'Paid'),
+          _buildStatusStep(
+            'Paid',
+            'Payment completed',
+            _currentStatus == 'Paid',
+          ),
         ],
       ),
     );
@@ -254,10 +261,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
             ),
           ],
         ),
@@ -292,7 +296,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text('Accept Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          child: const Text(
+            'Accept Order',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
         ),
       );
     }
@@ -310,29 +317,38 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text('Proceed to Payout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          child: const Text(
+            'Proceed to Payout',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
         ),
       );
     }
-    
+
     if (_currentStatus == 'Paid') {
-       return Container(
-         width: double.infinity,
-         padding: const EdgeInsets.all(16),
-         decoration: BoxDecoration(
-           color: Colors.green.shade50,
-           borderRadius: BorderRadius.circular(12),
-           border: Border.all(color: Colors.green.shade200)
-         ),
-         child: const Row(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-             Icon(Icons.check_circle, color: Colors.green),
-             SizedBox(width: 8),
-             Text('This order has been fully paid.', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-           ],
-         ),
-       );
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.shade200),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text(
+              'This order has been fully paid.',
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return const SizedBox.shrink();

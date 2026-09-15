@@ -10,7 +10,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('Handling a background message: ${message.messageId}');
+  debugPrint('Handling a background message: ${message.messageId}');
 }
 
 void main() async {
@@ -22,11 +22,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   final messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  await messaging.requestPermission(alert: true, badge: true, sound: true);
 
   runApp(const MyApp());
 }

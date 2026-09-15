@@ -142,13 +142,6 @@ class _PhoneSignInPageState extends State<PhoneSignInPage> {
                       decoration: BoxDecoration(
                         color: AppTheme.surface,
                         borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 18,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

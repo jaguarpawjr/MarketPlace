@@ -15,7 +15,7 @@ class AIAgentService {
 
   /// Base URL for the Gemini API.
   final String baseUrl;
-//! todo:
+  //! todo:
   AIAgentService({
     required this.apiKey,
     this.model = 'gemini-2.5-flash-lite',

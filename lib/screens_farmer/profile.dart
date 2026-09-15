@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace/Auth/login.dart';
 import 'package:marketplace/screens/chat/chat_screen.dart';
 import 'package:marketplace/user_service.dart';
+import 'package:marketplace/screens/support/support_tickets_screen.dart';
 
 class FarmerProfileScreen extends StatefulWidget {
   const FarmerProfileScreen({super.key});
@@ -42,23 +43,15 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
             ),
             _buildMenuTile(
               context,
-              icon: Icons.notifications_none,
-              title: 'Notifications',
-              subtitle: 'View updates and alerts',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
-                );
-              },
-            ),
-            _buildMenuTile(
-              context,
               icon: Icons.help_outline,
-              title: 'Help & Support',
-              subtitle: 'Ask questions or report issues',
+              title: 'Reports & Feedback',
+              subtitle: 'Report an issue and receive feedback',
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const SupportTicketsScreen(userType: 'farmer'),
+                  ),
                 );
               },
             ),
@@ -199,54 +192,6 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
-      ),
-    );
-  }
-}
-
-class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          _NotificationItem(
-            title: 'New buyer inquiry',
-            subtitle: 'A buyer is interested in your tomato listing',
-          ),
-          _NotificationItem(
-            title: 'Order update',
-            subtitle: 'Your latest order has moved to processing',
-          ),
-          _NotificationItem(
-            title: 'System alert',
-            subtitle: 'Maintenance scheduled at 11:00 PM tonight',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NotificationItem extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _NotificationItem({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        leading: const Icon(Icons.notifications_active_outlined),
       ),
     );
   }

@@ -8,7 +8,6 @@ import 'package:marketplace/theme.dart';
 import 'package:marketplace/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,34 +41,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Google sign-in failed: ${e.toString()}')),
-      );
-    }
-  }
-
-  Future<void> _signInWithFacebook() async {
-    setState(() => _isLoading = true);
-    try {
-      final loginResult = await FacebookAuth.instance.login(
-        permissions: ['email', 'public_profile'],
-      );
-      if (loginResult.status != LoginStatus.success ||
-          loginResult.accessToken == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final credential = FacebookAuthProvider.credential(
-        loginResult.accessToken!.token,
-      );
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
-      await _handlePostSignIn(userCredential.user);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Facebook sign-in failed: ${e.toString()}')),
       );
     }
   }
@@ -169,14 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                   onTap: _isLoading ? null : _signInWithGoogle,
                 ),
                 const SizedBox(height: 14),
-                _buildSignInOption(
-                  icon: Icons.facebook,
-                  title: 'Continue with Facebook',
-                  subtitle: 'Sign in quickly using your Facebook account.',
-                  accentColor: const Color(0xFF1877F2),
-                  isLoading: _isLoading,
-                  onTap: _isLoading ? null : _signInWithFacebook,
-                ),
+
                 const SizedBox(height: 28),
                 const Center(
                   child: Text(
@@ -282,13 +246,6 @@ class _LoginPageState extends State<LoginPage> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: accentColor.withValues(alpha: 0.16)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
           child: Row(
             children: [

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:marketplace/Auth/phone_signin.dart';
 
-
-
 void main() {
   testWidgets('Phone sign-in screen smoke test', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(313, 691);

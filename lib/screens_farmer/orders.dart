@@ -33,16 +33,89 @@ class FarmerOrdersScreen extends StatelessWidget {
 
           final orders = snapshot.data ?? [];
           if (orders.isEmpty) {
-            return const Center(child: Text('You have no customer orders yet.'));
+            return const Center(
+              child: Text('You have no customer orders yet.'),
+            );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final order = orders[index];
-              return _OrderCard(order: order);
-            },
+          final paymentAllowedOrders = orders
+              .where((o) => o.orderStatus == 'Payment Allowed')
+              .toList();
+          final double totalPayout = paymentAllowedOrders.fold(
+            0,
+            (sum, o) => sum + o.price,
+          );
+
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Payout Summary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Ready for payout: GHC ${totalPayout.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF5C3BFF),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: totalPayout > 0
+                            ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Payout request sent. (Demo)',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            53,
+                            177,
+                            94,
+                          ),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Request Payout'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    return _OrderCard(order: order);
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -136,7 +209,9 @@ class _OrderCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: order.orderStatus == 'Pending'
                           ? Colors.orange
-                          : order.orderStatus == 'Accepted' ? Colors.blue : Colors.green,
+                          : order.orderStatus == 'Accepted'
+                          ? Colors.blue
+                          : Colors.green,
                     ),
                   ),
                   Text(
@@ -145,6 +220,23 @@ class _OrderCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (order.orderStatus == 'Pending')
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        OrderService.updateOrderStatus(order.id, 'Sent');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Mark as Sent'),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

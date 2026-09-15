@@ -62,11 +62,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           final message = messages[index];
-                          final senderType =
-                              (message['authorType'] as String?) ?? 'support';
-                          final isMine =
-                              message['senderId'] == currentUser.uid ||
-                              senderType == 'user';
+                          final isMine = message['senderId'] == currentUser.uid;
                           return _MessageBubble(
                             author: (message['author'] as String?) ?? 'Support',
                             text: (message['text'] as String?) ?? '',
@@ -163,7 +159,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
         senderId: currentUserId,
         senderName:
             currentUser.displayName ?? currentUser.email ?? 'Marketplace user',
-        senderType: 'user',
+        senderType: widget.userType == 'admin' ? 'admin' : 'user',
         message: text,
       );
       _replyController.clear();

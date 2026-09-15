@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -248,16 +247,14 @@ class FarmMemoryService {
 
   static Future<String> uploadImage(XFile image, {String? farmerId}) async {
     final ownerId = farmerId ?? _farmerId();
-    
+
     final safeName = image.name.replaceAll(' ', '_');
     final storagePath =
         'farm_diagnosis_images/$ownerId/${DateTime.now().millisecondsSinceEpoch}_$safeName';
     final ref = _storage.ref().child(storagePath);
 
     try {
-      final metadata = SettableMetadata(
-        contentType: image.mimeType,
-      );
+      final metadata = SettableMetadata(contentType: image.mimeType);
       final uploadTask = ref.putData(await image.readAsBytes(), metadata);
       await uploadTask.whenComplete(() {});
       final downloadUrl = await ref.getDownloadURL();

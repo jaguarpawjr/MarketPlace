@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:marketplace/models/user_profile.dart' as user_profile;
-
-
+import 'package:marketplace/services/market_service.dart';
 
 class Product {
   final String name;
   final String category;
   final String location;
   final String price;
+  final String? imageUrl;
   final double priceValue;
   final String freshness;
   final double rating;
@@ -22,6 +22,7 @@ class Product {
     required this.category,
     required this.location,
     required this.price,
+    this.imageUrl,
     required this.priceValue,
     required this.freshness,
     required this.rating,
@@ -128,7 +129,10 @@ class UserSession {
     currentRole = role;
   }
 
-  static Future<void> saveRoleForUser(String uid, user_profile.UserRole role) async {
+  static Future<void> saveRoleForUser(
+    String uid,
+    user_profile.UserRole role,
+  ) async {
     await _usersCollection.doc(uid).set({
       'role': role.name,
     }, SetOptions(merge: true));
@@ -154,6 +158,35 @@ class UserSession {
       return;
     }
     cart.add(CartItem(product: product));
+  }
+
+  static void addMarketProductToCart(MarketProduct mp, {int quantity = 1}) {
+    final match = RegExp(r'[\d,.]+').firstMatch(mp.price);
+    final val = match != null
+        ? (double.tryParse(match.group(0)!.replaceAll(',', '')) ?? 10.0)
+        : 10.0;
+    final prod = Product(
+      name: mp.name,
+      category: mp.category,
+      location: mp.location,
+      price: mp.price,
+      imageUrl: mp.mediaUrls.isNotEmpty ? mp.mediaUrls.first : null,
+      priceValue: val,
+      freshness: mp.freshness,
+      rating: mp.rating,
+      badge: mp.badge,
+      highlight: mp.highlight,
+      imageColor: mp.imageColor,
+      farmerName: mp.farmerName,
+    );
+    final existing = cart
+        .where((item) => item.product.name == prod.name)
+        .toList();
+    if (existing.isNotEmpty) {
+      existing.first.quantity += quantity;
+    } else {
+      cart.add(CartItem(product: prod, quantity: quantity));
+    }
   }
 
   static void removeFromCart(Product product) {

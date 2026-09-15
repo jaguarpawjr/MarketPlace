@@ -5,28 +5,70 @@ import 'package:marketplace/screens/product_detail.dart';
 import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/services/user_session.dart';
 
+import 'package:marketplace/theme.dart';
+
 class MarketplaceScreen extends StatefulWidget {
-  const MarketplaceScreen({super.key});
+  final String? initialCategory;
+  final String? initialSearch;
+
+  const MarketplaceScreen({
+    super.key,
+    this.initialCategory,
+    this.initialSearch,
+  });
 
   @override
-  State<MarketplaceScreen> createState() => _MarketplaceScreenState();
+  State<MarketplaceScreen> createState() => MarketplaceScreenState();
 }
 
-class _MarketplaceScreenState extends State<MarketplaceScreen> {
+class MarketplaceScreenState extends State<MarketplaceScreen> {
   int _selectedTab = 0;
   int _selectedCategory = 0;
   final _searchController = TextEditingController();
 
   List<String> get _categories => [
     'All',
+    'Crops',
     'Vegetables',
     'Fruits',
+    'Seeds',
+    'Seedlings',
+    'Machinery',
     'Dairy',
     'Herbs',
   ];
   List<String> get _tabs =>
       UserSession.isFarmer ? ['Browse', 'My listings'] : ['Browse'];
   String get _currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  void applyFilter({String? category, String? query}) {
+    setState(() {
+      if (category != null) {
+        final idx = _categories.indexWhere(
+          (c) => c.toLowerCase() == category.toLowerCase(),
+        );
+        if (idx != -1) {
+          _selectedCategory = idx;
+        } else {
+          _selectedCategory = 0;
+        }
+      }
+      if (query != null) {
+        _searchController.text = query;
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialSearch != null && widget.initialSearch!.isNotEmpty) {
+      _searchController.text = widget.initialSearch!;
+    }
+    if (widget.initialCategory != null) {
+      applyFilter(category: widget.initialCategory);
+    }
+  }
 
   @override
   void dispose() {
@@ -36,10 +78,26 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
   List<MarketProduct> _filterProducts(List<MarketProduct> products) {
     final query = _searchController.text.toLowerCase();
+    final selectedCat = _selectedCategory > 0
+        ? _categories[_selectedCategory].toLowerCase()
+        : null;
+
     var list = products.where((product) {
-      if (_selectedCategory > 0 &&
-          product.category != _categories[_selectedCategory]) {
-        return false;
+      if (selectedCat != null && selectedCat != 'all') {
+        final prodCat = product.category.toLowerCase();
+        if (selectedCat == 'crops') {
+          // 'Crops' category matches all agricultural produce
+          if (prodCat != 'crops' &&
+              prodCat != 'vegetables' &&
+              prodCat != 'fruits' &&
+              prodCat != 'produce' &&
+              prodCat != 'seeds' &&
+              prodCat != 'seedlings') {
+            return false;
+          }
+        } else if (prodCat != selectedCat) {
+          return false;
+        }
       }
       if (query.isNotEmpty &&
           !product.name.toLowerCase().contains(query) &&
@@ -82,19 +140,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: AppTheme.primary),
                 );
               }
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text(
-                    'Failed to load products',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                );
+              var products = snapshot.data ?? [];
+              if (products.isEmpty) {
+                products = _defaultMarketplaceProducts;
               }
 
-              final products = snapshot.data ?? [];
               final displayed = _filterProducts(products);
               if (displayed.isEmpty) {
                 return _buildEmptyState();
@@ -112,35 +165,37 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Marketplace',
-              style: TextStyle(
-                fontSize: 28,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'Marketplace',
+                style: TextStyle(
+                  fontSize: 26,
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Browse fresh produce from local farmers',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-          ],
+              SizedBox(height: 4),
+              Text(
+                'Browse fresh produce from local farmers',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              ),
+            ],
+          ),
         ),
         if (UserSession.isFarmer)
           ElevatedButton.icon(
             onPressed: _openAddListing,
-            icon: const Icon(Icons.add),
-            label: const Text('List'),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('List Produce'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.deepPurple.shade700,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              backgroundColor: AppTheme.primaryLight,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
           ),
@@ -151,24 +206,32 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
-          hintText: 'Search produce, category or farm',
-          prefixIcon: const Icon(Icons.search_outlined),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              _searchController.clear();
-              setState(() {});
-            },
+          hintText: 'Search produce, category or farm...',
+          hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: Color(0xFF9CA3AF),
           ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                )
+              : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
@@ -176,11 +239,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
   Widget _buildCategoryChips() {
     return SizedBox(
-      height: 42,
+      height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final category = _categories[index];
           final selected = index == _selectedCategory;
@@ -188,14 +251,21 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             label: Text(category),
             selected: selected,
             onSelected: (_) => setState(() => _selectedCategory = index),
-            selectedColor: const Color.fromARGB(255, 238, 237, 238),
-            backgroundColor: Colors.white24,
+            selectedColor: AppTheme.primary,
+            backgroundColor: Colors.white,
+            showCheckmark: false,
             labelStyle: TextStyle(
-              color: selected ? Colors.deepPurple.shade700 : Colors.black87,
-              fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+              color: selected ? Colors.white : AppTheme.textPrimary,
+              fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+              fontSize: 13,
             ),
-            side: const BorderSide(color: Colors.transparent),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            side: BorderSide(
+              color: selected ? AppTheme.primary : const Color(0xFFE5E7EB),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           );
         },
       ),
@@ -203,32 +273,50 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   }
 
   Widget _buildTabBar() {
-    return Row(
-      children: List.generate(_tabs.length, (index) {
-        final selected = index == _selectedTab;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedTab = index),
-            child: Container(
-              decoration: BoxDecoration(
-                color: selected ? Colors.white : Colors.white24,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Center(
-                child: Text(
-                  _tabs[index],
-                  style: TextStyle(
-                    color: selected ? Colors.deepPurple.shade700 : Colors.white,
-                    fontSize: 15,
-                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: List.generate(_tabs.length, (index) {
+          final selected = index == _selectedTab;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTab = index),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: selected ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Center(
+                  child: Text(
+                    _tabs[index],
+                    style: TextStyle(
+                      color: selected
+                          ? AppTheme.primary
+                          : AppTheme.textSecondary,
+                      fontSize: 14,
+                      fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 
@@ -237,30 +325,167 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Icon(Icons.shopping_basket_outlined, size: 60, color: Colors.white30),
+          Icon(
+            Icons.shopping_basket_outlined,
+            size: 60,
+            color: AppTheme.primary,
+          ),
           SizedBox(height: 14),
           Text(
             'No items found',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: 6),
           Text(
             'Try a different category or search term.',
-            style: TextStyle(color: Colors.white54, fontSize: 14),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
+  static final List<MarketProduct> _defaultMarketplaceProducts = [
+    MarketProduct(
+      id: 'fresh_tomatoes',
+      name: 'Fresh Tomatoes',
+      category: 'Crops',
+      location: 'Uasin Gishu, Kenya',
+      price: 'Ksh 45/kg',
+      freshness: 'Just harvested',
+      rating: 4.8,
+      badge: 'Fresh',
+      highlight: true,
+      imageColorValue: 0xFFFEE2E2,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_1',
+      farmerName: 'Eldoret Greens',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'sweet_bananas',
+      name: 'Sweet Bananas',
+      category: 'Crops',
+      location: 'Kisii, Kenya',
+      price: 'Ksh 120/bunch',
+      freshness: 'Farm ripe',
+      rating: 4.7,
+      badge: 'Sweet',
+      highlight: false,
+      imageColorValue: 0xFFFEF3C7,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_2',
+      farmerName: 'Kisii Harvest',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'white_maize',
+      name: 'White Maize',
+      category: 'Crops',
+      location: 'Trans Nzoia, Kenya',
+      price: 'Ksh 60/kg',
+      freshness: 'Sun dried',
+      rating: 4.8,
+      badge: 'Staple',
+      highlight: false,
+      imageColorValue: 0xFFFEF08A,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_3',
+      farmerName: 'Kitale Grain Farms',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'rice_seeds',
+      name: 'Rice Seeds',
+      category: 'Seeds',
+      location: 'Mwea, Kenya',
+      price: '\$15/kg',
+      freshness: 'Certified seeds',
+      rating: 4.9,
+      badge: 'Certified',
+      highlight: true,
+      imageColorValue: 0xFFE0E7FF,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_4',
+      farmerName: 'Green Valley Agro',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'lime_seedlings',
+      name: 'Lime Seedlings',
+      category: 'Seedlings',
+      location: 'Kilifi, Kenya',
+      price: '\$5/pcs',
+      freshness: 'Nursery fresh',
+      rating: 4.9,
+      badge: 'Popular',
+      highlight: true,
+      imageColorValue: 0xFFDCFCE7,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1592417817098-8f3d6ef23a80?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_5',
+      farmerName: 'Sunshine Nursery',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'tractor_equipment',
+      name: 'Farm Tractor',
+      category: 'Machinery',
+      location: 'Eldoret, Kenya',
+      price: '\$45/day',
+      freshness: 'Serviced',
+      rating: 4.8,
+      badge: 'Rental',
+      highlight: true,
+      imageColorValue: 0xFFFEF3C7,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_6',
+      farmerName: 'Agro Machinery Ltd',
+      createdAt: DateTime.now(),
+    ),
+    MarketProduct(
+      id: 'yam_tubers',
+      name: 'Yam Tubers',
+      category: 'Crops',
+      location: 'Meru, Kenya',
+      price: 'Ksh 150/piece',
+      freshness: 'Organically grown',
+      rating: 4.6,
+      badge: 'Organic',
+      highlight: false,
+      imageColorValue: 0xFFE2E8F0,
+      mediaUrls: [
+        'https://images.unsplash.com/photo-1596797882870-8c33deeac224?w=600&auto=format&fit=crop&q=80',
+      ],
+      farmerId: 'farmer_7',
+      farmerName: 'Meru Farmers Co-op',
+      createdAt: DateTime.now(),
+    ),
+  ];
+
   Widget _buildProductGrid(List<MarketProduct> products) {
     return GridView.builder(
       itemCount: products.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 10,
-        childAspectRatio: 0.6,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.68,
       ),
       itemBuilder: (context, index) {
         final product = products[index];
@@ -282,23 +507,16 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     final isVideo = firstMediaUrl != null && _isVideo(firstMediaUrl);
     final isMyListing = _canManageListing(product);
 
-    final card = Container(
+    return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 150,
+            height: 135,
             width: double.maxFinite,
             decoration: BoxDecoration(
               color: product.imageColor,
@@ -323,35 +541,29 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       color: Colors.white70,
                     ),
                   ),
-                Align(
-                  alignment: Alignment.topRight,
+                Positioned(
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    margin: const EdgeInsets.all(12),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(9),
                     ),
-                    child: Text(
-                      product.badge,
-                      style: TextStyle(
-                        color: Colors.grey.shade800,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: const Icon(
+                      Icons.bookmark_border_rounded,
+                      color: AppTheme.primary,
+                      size: 16,
                     ),
                   ),
                 ),
                 if (product.highlight)
                   Positioned(
-                    top: 12,
-                    left: 12,
+                    top: 10,
+                    left: 10,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.amber,
+                        color: AppTheme.accentYellow,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -361,13 +573,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.star, size: 14, color: Colors.white),
-                          SizedBox(width: 4),
+                          Icon(Icons.star, size: 12, color: Colors.white),
+                          SizedBox(width: 3),
                           Text(
                             'Featured',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -377,8 +589,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   ),
                 if (isMyListing)
                   Positioned(
-                    right: 12,
-                    bottom: 12,
+                    left: 10,
+                    bottom: 10,
                     child: PopupMenuButton<String>(
                       onSelected: (value) {
                         if (value == 'edit') {
@@ -402,10 +614,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(6),
                         child: const Icon(
                           Icons.more_horiz,
-                          size: 18,
+                          size: 16,
                           color: Colors.black87,
                         ),
                       ),
@@ -415,48 +627,68 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   product.name,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  product.location,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  product.location,
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
                 Row(
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.secondary,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 6,
+                        vertical: 3,
                       ),
                       child: Text(
                         product.freshness,
-                        style: TextStyle(
-                          color: Colors.deepPurple.shade700,
-                          fontSize: 11,
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                    ),
+                    const Spacer(),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: AppTheme.accentYellow,
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      product.rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -464,18 +696,35 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       product.price,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          product.rating.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 13),
+                    InkWell(
+                      onTap: () {
+                        UserSession.addMarketProductToCart(product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Added ${product.name} to cart'),
+                            duration: const Duration(seconds: 2),
+                            backgroundColor: AppTheme.primaryLight,
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryLight,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
+                        child: const Icon(
+                          Icons.add,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -485,8 +734,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         ],
       ),
     );
-
-    return card;
   }
 
   void _openProductDetail(List<MarketProduct> products, int index) {

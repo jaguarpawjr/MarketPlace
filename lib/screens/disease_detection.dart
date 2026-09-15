@@ -15,10 +15,7 @@ class DiseaseDetectionScreen extends StatelessWidget {
         SizedBox(height: 8),
         Expanded(
           child: Center(
-            child: Text(
-              'Image upload & analysis placeholder',
-              style: TextStyle(color: Colors.white70),
-            ),
+            child: Text('Coming soon', style: TextStyle(color: Colors.white70)),
           ),
         ),
       ],
