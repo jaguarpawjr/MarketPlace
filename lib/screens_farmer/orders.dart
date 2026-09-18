@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace/models/order.dart';
 import 'package:marketplace/services/order_service.dart';
 import 'package:marketplace/screens/order_detail.dart';
+import 'package:marketplace/theme.dart';
 
 class FarmerOrdersScreen extends StatelessWidget {
   const FarmerOrdersScreen({super.key});
@@ -15,7 +16,7 @@ class FarmerOrdersScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F6FF),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Customer Orders'),
         backgroundColor: const Color.fromARGB(255, 53, 177, 94),
@@ -39,7 +40,7 @@ class FarmerOrdersScreen extends StatelessWidget {
           }
 
           final paymentAllowedOrders = orders
-              .where((o) => o.orderStatus == 'Payment Allowed')
+              .where((o) => o.orderStatus == 'Paid')
               .toList();
           final double totalPayout = paymentAllowedOrders.fold(
             0,
@@ -227,13 +228,13 @@ class _OrderCard extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        OrderService.updateOrderStatus(order.id, 'Sent');
+                        OrderService.updateOrderStatus(order.id, 'Accepted');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Mark as Sent'),
+                      child: const Text('Approve Order'),
                     ),
                   ),
                 ),

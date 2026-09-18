@@ -35,7 +35,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               icon: const Icon(Icons.logout),
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
-                if (mounted) {
+                if (context.mounted) {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (_) => const LoginPage()),
                   );

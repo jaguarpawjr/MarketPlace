@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:marketplace/screens/product_detail.dart';
 import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/services/user_session.dart';
+import 'package:marketplace/theme.dart';
+
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -83,14 +85,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Colors.white),
+                    child: CircularProgressIndicator(color: AppTheme.primary),
                   );
                 }
                 if (snapshot.hasError) {
                   return const Center(
                     child: Text(
                       'Failed to load products',
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(color: AppTheme.textSecondary),
                     ),
                   );
                 }
@@ -121,14 +123,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               'Marketplace',
               style: TextStyle(
                 fontSize: 28,
-                color: Colors.white,
+                color: AppTheme.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 6),
             Text(
               'Browse fresh produce from local farmers',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
             ),
           ],
         ),
@@ -138,8 +140,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             icon: const Icon(Icons.add),
             label: const Text('List'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color.fromARGB(255, 95, 226, 169),
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -190,13 +192,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             label: Text(category),
             selected: selected,
             onSelected: (_) => setState(() => _selectedCategory = index),
-            selectedColor: const Color.fromARGB(255, 238, 237, 238),
-            backgroundColor: Colors.white24,
+            selectedColor: AppTheme.primary,
+            backgroundColor: AppTheme.surface,
             labelStyle: TextStyle(
-              color: selected ? Colors.deepPurple.shade700 : Colors.black87,
+              color: selected ? Colors.white : AppTheme.textPrimary,
               fontWeight: selected ? FontWeight.bold : FontWeight.w500,
             ),
-            side: const BorderSide(color: Colors.transparent),
+            side: BorderSide(
+              color: selected ? AppTheme.primary : const Color(0xFFE5E7EB),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           );
         },
@@ -213,15 +217,18 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             onTap: () => setState(() => _selectedTab = index),
             child: Container(
               decoration: BoxDecoration(
-                color: selected ? Colors.white : Colors.white24,
+                color: selected ? AppTheme.primary : AppTheme.surface,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: selected ? AppTheme.primary : const Color(0xFFE5E7EB),
+                ),
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: Center(
                 child: Text(
                   _tabs[index],
                   style: TextStyle(
-                    color: selected ? Colors.deepPurple.shade700 : Colors.white,
+                    color: selected ? Colors.white : AppTheme.textPrimary,
                     fontSize: 15,
                     fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                   ),
@@ -239,16 +246,20 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Icon(Icons.shopping_basket_outlined, size: 60, color: Colors.white30),
+          Icon(
+            Icons.shopping_basket_outlined,
+            size: 60,
+            color: AppTheme.textSecondary,
+          ),
           SizedBox(height: 14),
           Text(
             'No items found',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 16),
           ),
           SizedBox(height: 6),
           Text(
             'Try a different category or search term.',
-            style: TextStyle(color: Colors.white54, fontSize: 14),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
           ),
         ],
       ),
@@ -690,7 +701,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
         title: Text(
           widget.productToEdit == null ? 'Create listing' : 'Edit listing',
         ),
-        backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+        backgroundColor: AppTheme.background,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -770,15 +781,18 @@ class _AddListingScreenState extends State<AddListingScreen> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white24,
+                              color: AppTheme.surface,
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EB),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   isVideo ? Icons.videocam : Icons.image,
-                                  color: Colors.white,
+                                  color: AppTheme.primary,
                                 ),
                                 const SizedBox(width: 6),
                                 SizedBox(
@@ -787,7 +801,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
                                     file.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimary,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -804,6 +820,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     onPressed: _saving ? null : _saveListing,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -826,7 +843,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
           ),
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+      backgroundColor: AppTheme.background,
     );
   }
 
@@ -868,18 +885,18 @@ class _AddListingScreenState extends State<AddListingScreen> {
       },
       decoration: InputDecoration(
         labelText: 'Category',
-        labelStyle: const TextStyle(color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.black54),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white24),
+          borderSide: const BorderSide(color: Colors.black26),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: const BorderSide(color: Colors.black87),
         ),
       ),
-      dropdownColor: const Color.fromARGB(255, 53, 177, 94),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: AppTheme.surface,
+      style: const TextStyle(color: Colors.black87),
     );
   }
 }

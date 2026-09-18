@@ -11,6 +11,7 @@ class OrderModel {
   final double price;
   final String orderStatus;
   final DateTime timestamp;
+  final String checkoutId;
 
   OrderModel({
     required this.id,
@@ -23,6 +24,7 @@ class OrderModel {
     required this.price,
     required this.orderStatus,
     required this.timestamp,
+    this.checkoutId = '',
   });
 
   Map<String, dynamic> toMap() {
@@ -36,6 +38,7 @@ class OrderModel {
       'price': price,
       'orderStatus': orderStatus,
       'timestamp': Timestamp.fromDate(timestamp),
+      'checkoutId': checkoutId,
     };
   }
 
@@ -52,6 +55,7 @@ class OrderModel {
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
       orderStatus: data['orderStatus'] as String? ?? 'Pending',
       timestamp: _parseTimestamp(data['timestamp']),
+      checkoutId: data['checkoutId'] as String? ?? '',
     );
   }
 

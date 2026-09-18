@@ -6,6 +6,7 @@ import 'package:marketplace/Homepage/homepage_buyer.dart';
 import 'package:marketplace/models/user_profile.dart' as user_profile;
 import 'package:marketplace/role_selection_screen.dart';
 import 'package:marketplace/services/user_session.dart' as user_session;
+import 'package:marketplace/services/notification_service.dart';
 import 'package:marketplace/user_service.dart';
 import 'package:marketplace/theme.dart';
 
@@ -29,6 +30,8 @@ class AuthWrapper extends StatelessWidget {
         if (user == null) {
           return const LoginPage();
         }
+
+        NotificationService.registerCurrentUserToken();
 
         return FutureBuilder<user_profile.UserRole?>(
           future: UserService.resolveUserRole(user),

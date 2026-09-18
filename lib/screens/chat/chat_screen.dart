@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:marketplace/services/chat_service.dart';
+import 'package:marketplace/theme.dart';
 
 class ChatInboxScreen extends StatelessWidget {
   const ChatInboxScreen({super.key});
@@ -46,7 +47,7 @@ class ChatInboxScreen extends StatelessWidget {
                           backgroundColor: Colors.green.shade50,
                           child: Icon(
                             Icons.chat_bubble_outline,
-                            color: Colors.green.shade700,
+                            color: AppTheme.primary,
                           ),
                         ),
                         title: Text(

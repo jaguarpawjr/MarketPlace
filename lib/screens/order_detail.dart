@@ -2,6 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:marketplace/models/order.dart';
 import 'package:marketplace/services/order_service.dart';
+import 'package:marketplace/services/paystack_payment_service.dart';
+import 'package:marketplace/screens_buyer/profile.dart';
+import 'package:marketplace/user_service.dart';
+import 'package:marketplace/theme.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
@@ -55,51 +59,84 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  void _showPayoutSimulation() {
-    showDialog(
+  Future<String?> _getOrPromptEmail(User user) async {
+    // 1. Check FirebaseAuth email
+    if (user.email != null && user.email!.trim().isNotEmpty) {
+      return user.email!.trim();
+    }
+
+    // 2. Check Firestore profile email
+    final profile = await UserService.getUserProfile(user.uid);
+    if (profile?.email != null && profile!.email!.trim().isNotEmpty) {
+      return profile.email!.trim();
+    }
+
+    // 3. Prompt user & redirect to EditProfileScreen if missing
+    if (!mounted) return null;
+    final bool? shouldRedirect = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Proceed to Payout'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'You are about to authorize payment for ${widget.order.productName}.',
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Total Amount: GHC ${widget.order.price.toStringAsFixed(0)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'This will transfer funds from your wallet to the farmer\'s account.',
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Email Address Required'),
+        content: const Text(
+          'An email address is required to process payments and send receipts. Please update your profile to continue.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _updateStatus('Paid', 'Payment successful! Funds transferred.');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5C3BFF),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Confirm Payment'),
-            ),
-          ],
-        );
-      },
+            child: const Text('Update Profile'),
+          ),
+        ],
+      ),
     );
+
+    if (shouldRedirect == true && mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const EditProfileScreen(),
+        ),
+      );
+
+      // Re-check profile after returning from EditProfileScreen
+      final updatedProfile = await UserService.getUserProfile(user.uid);
+      if (updatedProfile?.email != null && updatedProfile!.email!.trim().isNotEmpty) {
+        return updatedProfile.email!.trim();
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _startPayment() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    final email = await _getOrPromptEmail(user);
+    if (email == null || email.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await PaystackPaymentService.startCheckout(
+        orderId: widget.order.id,
+        amount: widget.order.price,
+        buyerEmail: email,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Payment failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -308,7 +345,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _showPayoutSimulation,
+          onPressed: _startPayment,
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: const Color(0xFF5C3BFF),
@@ -318,9 +355,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
           ),
           child: const Text(
-            'Proceed to Payout',
+            'Pay with Paystack',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+        ),
+      );
+    }
+
+    if (_isBuyer && _currentStatus == 'Pending') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.shade200),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.hourglass_empty, color: Colors.orange),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Waiting for farmer approval. Payment will be available once this order is approved.',
+                style: TextStyle(color: Colors.orange),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -330,7 +391,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.green.shade50,
+          color: AppTheme.background,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.green.shade200),
         ),

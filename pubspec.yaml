@@ -58,10 +58,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-
+  flutter_launcher_icons: ^0.14.4
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/Marketplace_icon.jpeg"
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -72,6 +75,8 @@ flutter:
   assets:
     - assets/model/
     - .env
+    - assets/customer_care.jpeg
+    - assets/buyer_tips.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

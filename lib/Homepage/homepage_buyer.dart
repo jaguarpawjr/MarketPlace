@@ -182,14 +182,25 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(currentIndex, 0, Icons.home_rounded, 'Home'),
-              _buildNavItem(currentIndex, 1, Icons.storefront_rounded, 'Market'),
-              _buildCartNavItem(currentIndex, 
+              _buildNavItem(
+                currentIndex,
+                1,
+                Icons.storefront_rounded,
+                'Market',
+              ),
+              _buildCartNavItem(
+                currentIndex,
                 2,
                 Icons.shopping_cart_outlined,
                 'Cart',
                 cartCount,
               ),
-              _buildNavItem(currentIndex, 3, Icons.person_outline_rounded, 'Profile'),
+              _buildNavItem(
+                currentIndex,
+                3,
+                Icons.person_outline_rounded,
+                'Profile',
+              ),
             ],
           ),
         ),
@@ -197,7 +208,12 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
     );
   }
 
-  Widget _buildNavItem(int currentIndex, int index, IconData icon, String label) {
+  Widget _buildNavItem(
+    int currentIndex,
+    int index,
+    IconData icon,
+    String label,
+  ) {
     final isSelected = currentIndex == index;
     return InkWell(
       onTap: () => _indexNotifier.value = index,
@@ -227,7 +243,13 @@ class _HomePageBuyerState extends State<HomePageBuyer> {
     );
   }
 
-  Widget _buildCartNavItem(int currentIndex, int index, IconData icon, String label, int count) {
+  Widget _buildCartNavItem(
+    int currentIndex,
+    int index,
+    IconData icon,
+    String label,
+    int count,
+  ) {
     final isSelected = currentIndex == index;
     return InkWell(
       onTap: () => _indexNotifier.value = index,

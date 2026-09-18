@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/user_service.dart';
+import 'package:marketplace/theme.dart';
 
 class FarmerEditProfileScreen extends StatefulWidget {
   const FarmerEditProfileScreen({super.key});
@@ -208,13 +209,13 @@ class _FarmerEditProfileScreenState extends State<FarmerEditProfileScreen> {
           onTap: _pickAvatar,
           child: CircleAvatar(
             radius: 52,
-            backgroundColor: Colors.green.shade50,
+            backgroundColor: AppTheme.background,
             backgroundImage: imageProvider,
             child: imageProvider == null
                 ? Icon(
                     Icons.camera_alt_outlined,
                     size: 34,
-                    color: Colors.green.shade700,
+                    color: AppTheme.primary,
                   )
                 : null,
           ),

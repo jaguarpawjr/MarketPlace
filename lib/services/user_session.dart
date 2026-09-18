@@ -4,6 +4,7 @@ import 'package:marketplace/models/user_profile.dart' as user_profile;
 import 'package:marketplace/services/market_service.dart';
 
 class Product {
+  final String id;
   final String name;
   final String category;
   final String location;
@@ -15,9 +16,11 @@ class Product {
   final String badge;
   final bool highlight;
   final Color imageColor;
+  final String farmerId;
   final String farmerName;
 
   const Product({
+    this.id = '',
     required this.name,
     required this.category,
     required this.location,
@@ -29,6 +32,7 @@ class Product {
     required this.badge,
     required this.highlight,
     required this.imageColor,
+    this.farmerId = '',
     required this.farmerName,
   });
 }
@@ -166,6 +170,7 @@ class UserSession {
         ? (double.tryParse(match.group(0)!.replaceAll(',', '')) ?? 10.0)
         : 10.0;
     final prod = Product(
+      id: mp.id,
       name: mp.name,
       category: mp.category,
       location: mp.location,
@@ -177,6 +182,7 @@ class UserSession {
       badge: mp.badge,
       highlight: mp.highlight,
       imageColor: mp.imageColor,
+      farmerId: mp.farmerId,
       farmerName: mp.farmerName,
     );
     final existing = cart

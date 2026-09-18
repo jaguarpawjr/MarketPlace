@@ -1,15 +1,75 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SupportTicketService {
   static final _ticketsRef = FirebaseFirestore.instance.collection('tickets');
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-  streamTicketsForUser(String userId) {
-    return _ticketsRef
-        .where('userId', isEqualTo: userId)
-        .orderBy('updatedAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs);
+  streamTicketsForUser(String userId, {String? userEmail}) {
+    final controller =
+        StreamController<List<QueryDocumentSnapshot<Map<String, dynamic>>>>();
+    final ticketsById = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    final ticketsByEmail =
+        <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    final subscriptions = <StreamSubscription>[];
+
+    void emitTickets() {
+      final merged = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{
+        ...ticketsById,
+        ...ticketsByEmail,
+      }.values.toList();
+      merged.sort((a, b) {
+        final aUpdatedAt = _parseDate(a.data()['updatedAt']);
+        final bUpdatedAt = _parseDate(b.data()['updatedAt']);
+        return bUpdatedAt.compareTo(aUpdatedAt);
+      });
+      if (!controller.isClosed) {
+        controller.add(merged);
+      }
+    }
+
+    void listenTo(Query<Map<String, dynamic>> query, bool byEmail) {
+      final subscription = query.snapshots().listen(
+        (snapshot) {
+          final target = byEmail ? ticketsByEmail : ticketsById;
+          target
+            ..clear()
+            ..addEntries(snapshot.docs.map((doc) => MapEntry(doc.id, doc)));
+          emitTickets();
+        },
+        onError: controller.addError,
+      );
+      subscriptions.add(subscription);
+    }
+
+    listenTo(_ticketsRef.where('userId', isEqualTo: userId), false);
+
+    final email = userEmail?.trim();
+    if (email != null && email.isNotEmpty) {
+      listenTo(_ticketsRef.where('userEmail', isEqualTo: email), true);
+    }
+
+    controller.onCancel = () async {
+      for (final subscription in subscriptions) {
+        await subscription.cancel();
+      }
+    };
+
+    return controller.stream;
+  }
+
+  static DateTime _parseDate(Object? value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String) {
+      return DateTime.tryParse(value) ?? DateTime.fromMillisecondsSinceEpoch(0);
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   static Stream<DocumentSnapshot<Map<String, dynamic>>> streamTicket(

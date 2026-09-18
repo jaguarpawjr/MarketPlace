@@ -7,7 +7,10 @@ import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/services/weather_service.dart';
 import 'package:marketplace/screens/marketplace.dart';
 import 'package:marketplace/screens/ai_chat.dart';
-import 'package:marketplace/screens/disease_detection.dart';
+import 'package:marketplace/screens/chat/chat_screen.dart';
+import 'package:marketplace/screens/support/support_tickets_screen.dart';
+import 'package:marketplace/screens_farmer/esp32_camera_screen.dart';
+import 'package:marketplace/screens_farmer/orders.dart';
 import 'package:marketplace/screens_farmer/profile.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,7 +30,7 @@ class _HomePageState extends State<HomePage> {
     Center(child: Text('Home content (placeholder)')),
     MarketplaceScreen(),
     AIChatScreen(),
-    DiseaseDetectionScreen(),
+    Esp32CameraScreen(),
     FarmerProfileScreen(),
   ];
 
@@ -145,7 +148,7 @@ class _HomePageState extends State<HomePage> {
         return Scaffold(
           appBar: AppBar(
             title: Text(index == 0 ? 'Smart Farmer' : _navTitle(index)),
-            backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+            backgroundColor: AppTheme.background,
             actions: [
               IconButton(
                 icon: const Icon(Icons.notifications_none),
@@ -153,19 +156,83 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: Container(
-            decoration: BoxDecoration(gradient: AppTheme.authGradient()),
-            child: SafeArea(
-              child: index == 0
-                  ? SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: _buildHome(),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: _pages[index],
+          drawer: Drawer(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                UserAccountsDrawerHeader(
+                  accountName: Text(_displayName()),
+                  accountEmail: Text(
+                    FirebaseAuth.instance.currentUser?.email ?? '',
+                  ),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(
+                      Icons.person,
+                      color: Color.fromARGB(255, 4, 8, 6),
                     ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: const Text('Orders'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const FarmerOrdersScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chat_bubble_outline),
+                  title: const Text('Messaging'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ChatInboxScreen()),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: const Text('Edit Profile'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const EditFarmerProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.report_gmailerrorred_outlined),
+                  title: const Text('Report and Feedback'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const SupportTicketsScreen(userType: 'farmer'),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
+          ),
+          body: SafeArea(
+            child: index == 0
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildHome(),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _pages[index],
+                  ),
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: index,
@@ -195,18 +262,19 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color.fromARGB(255, 53, 177, 94),
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const AIChatScreen()));
-        },
-        child: const Icon(Icons.smart_toy_outlined),
-      ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: const Color.fromARGB(255, 53, 177, 94),
+            foregroundColor: Colors.white,
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const AIChatScreen()));
+            },
+            child: const Icon(Icons.smart_toy_outlined),
+          ),
+        );
+      },
     );
-  });
   }
 
   String _navTitle(int index) {
@@ -228,24 +296,28 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_greeting(), style: const TextStyle(color: Colors.white70)),
+        Text(_greeting(), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
-        Text(
-          '${_displayName()} 👋',
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        Row(
+          children: [
+            Text(
+              '${_displayName()}!',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text('👋', style: TextStyle(fontSize: 18)),
+          ],
         ),
         const SizedBox(height: 8),
         const Text(
           'A curated farm dashboard for your daily decisions.',
-          style: TextStyle(color: Colors.white70, fontSize: 14),
+          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
         ),
         const SizedBox(height: 20),
-        _buildMetricRow(),
-        const SizedBox(height: 16),
         _buildWeatherCard(),
         const SizedBox(height: 20),
         _buildQuickActions(),
@@ -254,20 +326,6 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 20),
         _buildFarmTipCard(),
         const SizedBox(height: 28),
-      ],
-    );
-  }
-
-  Widget _buildMetricRow() {
-    return Row(
-      children: [
-        _buildMetricTile('Soil moisture', '68%', Icons.water_drop_outlined),
-        const SizedBox(width: 12),
-        _buildMetricTile(
-          'Market price',
-          'Ksh 345/kg',
-          Icons.trending_up_outlined,
-        ),
       ],
     );
   }
@@ -283,7 +341,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.deepPurple.shade700),
+            Icon(icon, color: AppTheme.primary),
             const SizedBox(height: 12),
             Text(
               title,
@@ -313,7 +371,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.deepPurple),
+          child: CircularProgressIndicator(color: AppTheme.primary),
         ),
       );
     }
@@ -421,7 +479,7 @@ class _HomePageState extends State<HomePage> {
                   width: 110,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade50,
+                    color: AppTheme.background,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -458,7 +516,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         const Text(
           'Quick actions',
-          style: TextStyle(color: Colors.white70, fontSize: 14),
+          style: TextStyle(color: Colors.black87, fontSize: 14),
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -483,13 +541,10 @@ class _HomePageState extends State<HomePage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade50,
+                        color: AppTheme.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        action.icon,
-                        color: Colors.deepPurple.shade700,
-                      ),
+                      child: Icon(action.icon, color: AppTheme.primary),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -522,7 +577,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             const Text(
               'Featured offers',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: Colors.black87, fontSize: 14),
             ),
             const SizedBox(height: 12),
             offers.isEmpty
@@ -545,7 +600,7 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -594,7 +649,7 @@ class _HomePageState extends State<HomePage> {
                               ElevatedButton(
                                 onPressed: () => _indexNotifier.value = 1,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.deepPurple.shade600,
+                                  backgroundColor: AppTheme.primary,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -628,13 +683,10 @@ class _HomePageState extends State<HomePage> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.deepPurple.shade50,
+              color: AppTheme.background,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              Icons.storefront_outlined,
-              color: Colors.deepPurple.shade700,
-            ),
+            child: Icon(Icons.storefront_outlined, color: AppTheme.primary),
           ),
           const SizedBox(width: 14),
           const Expanded(

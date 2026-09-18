@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:marketplace/Auth/login.dart';
 import 'package:marketplace/screens/chat/chat_screen.dart';
+import 'package:marketplace/services/market_service.dart';
 import 'package:marketplace/user_service.dart';
 import 'package:marketplace/screens/support/support_tickets_screen.dart';
 
@@ -14,6 +18,93 @@ class FarmerProfileScreen extends StatefulWidget {
 }
 
 class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
+  final ImagePicker _imagePicker = ImagePicker();
+
+  Future<void> _changeAvatar() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    try {
+      final url = await MarketService.uploadMediaFile(image);
+      await user.updatePhotoURL(url);
+      await UserService.updateUserProfile(user.uid, {
+        'photoURL': url,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated.')),
+      );
+      setState(() {});
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile picture: $error')),
+      );
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await user.updatePhotoURL(null);
+      await UserService.updateUserProfile(user.uid, {
+        'photoURL': FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture removed.')),
+      );
+      setState(() {});
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to remove profile picture: $error')),
+      );
+    }
+  }
+
+  Future<void> _showAvatarOptions(bool hasPhoto) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(hasPhoto ? 'Change avatar' : 'Add avatar'),
+                onTap: () => Navigator.pop(context, 'change'),
+              ),
+              if (hasPhoto)
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                  title: Text(
+                    'Remove avatar',
+                    style: TextStyle(color: Colors.red.shade700),
+                  ),
+                  onTap: () => Navigator.pop(context, 'remove'),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action == 'change') {
+      await _changeAvatar();
+    } else if (action == 'remove') {
+      await _removeAvatar();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,6 +207,12 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
         final data = snapshot.data?.data() ?? <String, dynamic>{};
         final displayName = (data['displayName'] as String?)?.trim();
         final email = (data['email'] as String?)?.trim();
+        final photoUrl = (data['photoURL'] as String?)?.trim().isNotEmpty == true
+            ? data['photoURL'] as String
+            : (user?.photoURL?.trim().isNotEmpty == true
+                  ? user!.photoURL!
+                  : null);
+        final hasPhoto = photoUrl != null;
 
         return Container(
           padding: const EdgeInsets.all(20),
@@ -125,10 +222,41 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           ),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 34,
-                backgroundColor: Colors.green.shade700,
-                child: const Icon(Icons.person, size: 36, color: Colors.white),
+              InkWell(
+                borderRadius: BorderRadius.circular(40),
+                onTap: () => _showAvatarOptions(hasPhoto),
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 34,
+                      backgroundColor: Colors.green.shade700,
+                      backgroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
+                      child: hasPhoto
+                          ? null
+                          : const Icon(
+                              Icons.person,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          hasPhoto ? Icons.edit : Icons.add_a_photo_outlined,
+                          size: 14,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -284,7 +412,11 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
   final _specialtiesController = TextEditingController();
   final _deliveryRadiusController = TextEditingController();
   final _bioController = TextEditingController();
+  final _imagePicker = ImagePicker();
 
+  XFile? _avatarFile;
+  String? _existingPhotoUrl;
+  bool _removeExistingAvatar = false;
   bool _loading = true;
   bool _saving = false;
 
@@ -335,6 +467,10 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
           ? ''
           : deliveryRadius.toString();
       _bioController.text = data['bio'] as String? ?? '';
+      _existingPhotoUrl =
+          (data['photoURL'] as String?)?.trim().isNotEmpty == true
+          ? data['photoURL'] as String
+          : (user.photoURL?.trim().isNotEmpty == true ? user.photoURL : null);
       _loading = false;
     });
   }
@@ -351,6 +487,8 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
+                    _buildAvatarPicker(),
+                    const SizedBox(height: 20),
                     _buildTextField(
                       controller: _nameController,
                       label: 'Full name',
@@ -484,6 +622,74 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
     );
   }
 
+  Widget _buildAvatarPicker() {
+    final imageProvider = _avatarFile != null
+        ? FileImage(File(_avatarFile!.path)) as ImageProvider
+        : (!_removeExistingAvatar &&
+                  _existingPhotoUrl != null &&
+                  _existingPhotoUrl!.isNotEmpty
+              ? NetworkImage(_existingPhotoUrl!)
+              : null);
+    final hasAvatar = imageProvider != null;
+
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickAvatar,
+          child: CircleAvatar(
+            radius: 52,
+            backgroundColor: Colors.green.shade50,
+            backgroundImage: imageProvider,
+            child: hasAvatar
+                ? null
+                : Icon(
+                    Icons.add_a_photo_outlined,
+                    size: 34,
+                    color: Colors.green.shade700,
+                  ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: _pickAvatar,
+              icon: const Icon(Icons.photo_library_outlined),
+              label: Text(hasAvatar ? 'Change avatar' : 'Add avatar'),
+            ),
+            if (hasAvatar)
+              TextButton.icon(
+                onPressed: _removeAvatar,
+                icon: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                label: Text(
+                  'Remove avatar',
+                  style: TextStyle(color: Colors.red.shade700),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickAvatar() async {
+    final file = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (file == null || !mounted) return;
+    setState(() {
+      _avatarFile = file;
+      _removeExistingAvatar = false;
+    });
+  }
+
+  void _removeAvatar() {
+    setState(() {
+      _avatarFile = null;
+      _removeExistingAvatar = true;
+    });
+  }
+
   Future<void> _saveProfile() async {
     if (_formKey.currentState?.validate() != true) {
       return;
@@ -504,7 +710,7 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
     try {
       final newEmail = _emailController.text.trim();
 
-      await UserService.updateUserProfile(user.uid, {
+      final updates = <String, dynamic>{
         'displayName': displayName,
         'email': newEmail,
         'phoneNumber': _phoneController.text.trim(),
@@ -515,7 +721,24 @@ class _EditFarmerProfileScreenState extends State<EditFarmerProfileScreen> {
         'bio': _bioController.text.trim(),
         'role': 'farmer',
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      };
+
+      if (_avatarFile != null) {
+        final avatarUrl = await MarketService.uploadMediaFile(_avatarFile!);
+        updates['photoURL'] = avatarUrl;
+      } else if (_removeExistingAvatar) {
+        updates['photoURL'] = FieldValue.delete();
+      }
+
+      await UserService.updateUserProfile(user.uid, updates);
+
+      if (_avatarFile != null || _removeExistingAvatar) {
+        try {
+          await user.updatePhotoURL(
+            _avatarFile != null ? updates['photoURL'] as String? : null,
+          );
+        } catch (_) {}
+      }
 
       if (user.displayName != displayName) {
         try {

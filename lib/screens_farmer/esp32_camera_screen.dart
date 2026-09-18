@@ -7,6 +7,7 @@ import 'package:marketplace/models/disease_info.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:mjpeg_view/mjpeg_view.dart';
+import 'package:marketplace/theme.dart';
 
 class Esp32CameraScreen extends StatefulWidget {
   const Esp32CameraScreen({super.key});
@@ -187,7 +188,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF26352F),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.greenAccent),
                     ),
@@ -201,7 +202,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                               const Text(
                                 'Detected:',
                                 style: TextStyle(
-                                  color: Colors.white54,
+                                  color: Colors.white70,
                                   fontSize: 14,
                                 ),
                               ),
@@ -209,7 +210,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                               Text(
                                 info?.title ?? disease,
                                 style: const TextStyle(
-                                  color: Colors.greenAccent,
+                                  color: Colors.white,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -223,7 +224,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                             const Text(
                               'Confidence',
                               style: TextStyle(
-                                color: Colors.white54,
+                                color: Colors.white70,
                                 fontSize: 14,
                               ),
                             ),
@@ -321,7 +322,7 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Dark mode background
+      backgroundColor: AppTheme.background, // Light theme background
       appBar: AppBar(
         title: const Text('Crop Scanning'),
         backgroundColor: Colors.transparent,
@@ -337,24 +338,23 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.wifi, color: Colors.greenAccent),
+                  const Icon(Icons.wifi, color: AppTheme.primary),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: _ipController,
-                      style: const TextStyle(
-                        color: Color.fromARGB(255, 18, 17, 17),
-                      ),
+                      style: const TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
                         hintText: 'Enter Camera IP',
-                        hintStyle: TextStyle(color: Colors.white38),
+                        hintStyle: TextStyle(color: AppTheme.textSecondary),
                         border: InputBorder.none,
+                        filled: false,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -364,8 +364,8 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                   ElevatedButton(
                     onPressed: _connectToCamera,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent,
-                      foregroundColor: Colors.greenAccent,
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -386,28 +386,32 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                   onPressed: () => _pickImage(ImageSource.camera),
                   icon: const Icon(
                     Icons.photo_camera,
-                    color: Colors.white70,
+                    color: AppTheme.primary,
                     size: 20,
                   ),
                   label: const Text(
                     'Use Phone Camera',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: AppTheme.textPrimary),
                   ),
-                  style: TextButton.styleFrom(backgroundColor: Colors.white10),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppTheme.surface,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 TextButton.icon(
                   onPressed: () => _pickImage(ImageSource.gallery),
                   icon: const Icon(
                     Icons.photo_library,
-                    color: Colors.white70,
+                    color: AppTheme.primary,
                     size: 20,
                   ),
                   label: const Text(
                     'Gallery',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: AppTheme.textPrimary),
                   ),
-                  style: TextButton.styleFrom(backgroundColor: Colors.white10),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppTheme.surface,
+                  ),
                 ),
               ],
             ),
@@ -471,7 +475,6 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     onPressed: _isConnected ? _captureImage : null,
                     icon: Icons.camera_alt,
                     label: 'Capture',
-                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -480,7 +483,6 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     onPressed: _capturedImage != null ? _analyzeDisease : null,
                     icon: Icons.analytics,
                     label: 'Analyze Disease',
-                    color: Colors.greenAccent,
                     isPrimary: true,
                   ),
                 ),
@@ -497,10 +499,10 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
                     }
                   });
                 },
-                icon: const Icon(Icons.refresh, color: Colors.white54),
+                icon: const Icon(Icons.refresh, color: AppTheme.primary),
                 label: const Text(
                   'Retake Picture',
-                  style: TextStyle(color: Colors.white54),
+                  style: TextStyle(color: AppTheme.textPrimary),
                 ),
               ),
           ],
@@ -547,12 +549,14 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
     required VoidCallback? onPressed,
     required IconData icon,
     required String label,
-    required Color color,
     bool isPrimary = false,
   }) {
-    final bgColor = isPrimary ? Colors.greenAccent : Colors.white;
-
-    final borderColor = isPrimary ? Colors.greenAccent : Colors.white;
+    final enabled = onPressed != null;
+    final bgColor = isPrimary ? AppTheme.primary : AppTheme.surface;
+    final fgColor = isPrimary ? Colors.white : AppTheme.primary;
+    final disabledBgColor = const Color(0xFFE5E7EB);
+    final disabledFgColor = AppTheme.textSecondary;
+    final borderColor = isPrimary ? AppTheme.primary : const Color(0xFFE5E7EB);
 
     return InkWell(
       onTap: onPressed,
@@ -560,10 +564,10 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: onPressed == null ? Colors.white : bgColor,
+          color: enabled ? bgColor : disabledBgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: onPressed == null ? Colors.transparent : borderColor,
+            color: enabled ? borderColor : disabledBgColor,
           ),
         ),
         child: Column(
@@ -571,14 +575,14 @@ class _Esp32CameraScreenState extends State<Esp32CameraScreen> {
           children: [
             Icon(
               icon,
-              color: onPressed == null ? Colors.white24 : color,
+              color: enabled ? fgColor : disabledFgColor,
               size: 28,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: onPressed == null ? Colors.white24 : color,
+                color: enabled ? fgColor : disabledFgColor,
                 fontWeight: FontWeight.bold,
               ),
             ),

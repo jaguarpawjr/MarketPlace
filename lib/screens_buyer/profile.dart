@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:marketplace/services/notification_service.dart';
 import 'package:marketplace/Auth/login.dart';
 import 'package:marketplace/screens/chat/chat_screen.dart';
 import 'package:marketplace/user_service.dart';
@@ -271,7 +272,38 @@ class NotificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
-      body: const Center(child: Text('No notifications yet.')),
+      body: StreamBuilder<List<AppNotification>>(
+        stream: NotificationService.streamCurrentUserNotifications(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final notifications = snapshot.data ?? const <AppNotification>[];
+          if (notifications.isEmpty) {
+            return const Center(child: Text('No notifications yet.'));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: notifications.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              return Card(
+                child: ListTile(
+                  leading: Icon(
+                    notification.type == 'payment_received'
+                        ? Icons.payments_outlined
+                        : Icons.notifications_outlined,
+                    color: AppTheme.primary,
+                  ),
+                  title: Text(notification.title),
+                  subtitle: Text(notification.body),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
