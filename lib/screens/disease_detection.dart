@@ -8,11 +8,7 @@ class DiseaseDetectionScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
-        Text(
-          'Disease Detection',
-          style: TextStyle(fontSize: 22, color: Colors.white),
-        ),
-        SizedBox(height: 8),
+                    SizedBox(height: 8),
         Expanded(
           child: Center(
             child: Text(

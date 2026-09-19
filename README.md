@@ -27,12 +27,69 @@ A comprehensive, dual-sided Flutter mobile application connecting **Farmers** an
 
 ## 💳 Payment & Escrow Workflow
 
-*(Note: Payment section improvements & planned escrow roadmap)*
-
 1. **Approval Request:** The buyer adds an item to their cart and requests approval.
 2. **Farmer Approval:** The farmer reviews and accepts/approves the order request.
-3. **Escrow Payment:** The buyer proceeds to pay for the approved item(s) via Paystack into the central admin account.
-4. **Fund Payout:** The farmer requests payout/fund transfers for items sold and fulfilled.
+3. **Escrow Payment:** The buyer pays via Paystack; funds are securely deposited into the **Central Admin Escrow Account**.
+4. **Payment Confirmation:** Paystack webhook verifies payment, updates Firestore order status (`Paid`), and alerts the farmer to fulfill the order.
+5. **Farmer Payout Request:** Upon order fulfillment, the farmer submits a payout request through the app.
+6. **Fund Transfer:** Cloud Functions / Paystack Transfer API executes the payout, transferring funds from the Admin Escrow Account directly into the **Farmer's Bank Account**.
+
+### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer
+    participant App as Flutter Mobile App
+    participant DB as Cloud Firestore
+    actor Farmer
+    participant CloudFunc as Firebase Cloud Functions
+    participant Admin as Admin Escrow Account
+    participant Paystack as Paystack Payment Gateway
+
+    %% Phase 1: Order Placement
+    Note over Buyer, Farmer: Phase 1: Order Placement & Approval Request
+    Buyer->>App: Select produce & place order
+    App->>DB: Create Order (status: "Pending")
+    DB-->>Farmer: FCM Notification ("New Order Request")
+
+    %% Phase 2: Farmer Approval
+    Note over Buyer, Farmer: Phase 2: Farmer Approval
+    Farmer->>App: Review order & click "Accept"
+    App->>DB: Update Order (status: "Accepted")
+    DB-->>Buyer: FCM Notification ("Order Approved. Proceed to Pay")
+
+    %% Phase 3: Buyer Payment to Admin Escrow Account
+    Note over Buyer, Admin: Phase 3: Buyer Payment to Admin Escrow Account
+    Buyer->>App: Tap "Pay Now"
+    App->>CloudFunc: POST /createTransaction (orderId, amount)
+    CloudFunc->>Paystack: Initialize Transaction
+    Paystack-->>CloudFunc: Return Checkout URL
+    CloudFunc-->>App: Authorization URL
+    App->>Paystack: Launch Payment Screen
+    Buyer->>Paystack: Complete Payment (Card / Transfer / USSD)
+    Paystack->>Admin: Deposit Funds into Admin Escrow Account
+
+    %% Phase 4: Webhook & Payment Notification
+    Note over Paystack, Farmer: Phase 4: Payment Confirmation & Order Status
+    Paystack->>CloudFunc: Webhook: charge.success
+    CloudFunc->>CloudFunc: Verify SHA512 Signature
+    CloudFunc->>DB: Update Order (status: "Paid", escrow: "Held in Admin Account")
+    CloudFunc-->>Farmer: FCM Notification ("Payment Escrowed! Proceed with Fulfillment")
+
+    %% Phase 5: Order Delivery, Farmer Payout Request & Bank Transfer
+    Note over Farmer, Admin: Phase 5: Delivery, Farmer Payout Request & Transfer
+    Farmer->>Buyer: Fulfill & deliver produce to Buyer
+    Farmer->>App: Submit "Request Payment / Payout"
+    App->>CloudFunc: POST /admin/payout (orderId, farmerRecipientCode)
+    CloudFunc->>CloudFunc: Validate Order Paid & Fulfilled
+    CloudFunc->>Paystack: Create Transfer (Admin Escrow -> Farmer Bank Account)
+    Admin->>Paystack: Transfer Funds
+    Paystack-->>Farmer: Direct Deposit into Farmer Bank Account
+    Paystack->>CloudFunc: Webhook: transfer.success
+    CloudFunc->>DB: Update Order (payoutStatus: "success")
+    CloudFunc-->>Farmer: FCM Notification ("Funds Transferred to Your Bank Account")
+```
 
 ---
 

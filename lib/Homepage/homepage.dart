@@ -191,7 +191,9 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ChatInboxScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const ChatInboxScreen(),
+                      ),
                     );
                   },
                 ),
@@ -296,7 +298,14 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_greeting(), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+        Text(
+          _greeting(),
+          style: const TextStyle(
+            color: AppTheme.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         const SizedBox(height: 4),
         Row(
           children: [
