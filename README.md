@@ -25,6 +25,18 @@ A comprehensive, dual-sided Flutter mobile application connecting **Farmers** an
 
 ---
 
+## 📱 Application Screenshots
+
+| Buyer Home | Marketplace & Listings | Smart Farmer Dashboard |
+| :---: | :---: | :---: |
+| <img src="assets/app_images/Screenshot 2026-09-17 212150.png" width="260" alt="Buyer Home"/> | <img src="assets/app_images/Screenshot 2026-09-19 010216.png" width="260" alt="Marketplace & Produce Listings"/> | <img src="assets/app_images/Screenshot 2026-09-19 012916.png" width="260" alt="Smart Farmer Dashboard"/> |
+
+| Crop Disease Detection (AI & ESP32) | Profile & Account Management |
+| :---: | :---: |
+| <img src="assets/app_images/Screenshot 2026-09-19 013219.png" width="260" alt="Crop Disease Scanning"/> | <img src="assets/app_images/Screenshot 2026-09-19 013229.png" width="260" alt="Profile & Settings"/> |
+
+---
+
 ## 💳 Payment & Escrow Workflow
 
 1. **Approval Request:** The buyer adds an item to their cart and requests approval.
